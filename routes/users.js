@@ -21,7 +21,8 @@ router.get('/all',async(req,res)=>{
     let token = req.headers.authorization.split(" ")[1]
     let validation = await validate(token)
 
-    if(validation.validity)
+    let user = await db.collection('user').findOne({email:validation.email,role:validation.role})
+    if(user && validation.validity)
     {
         const db = await client.db(dbName)
       let users = await db.collection('user').find().toArray();
