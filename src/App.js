@@ -3,7 +3,7 @@ import {BrowserRouter as Router,Routes,Route} from 'react-router-dom';
 import Signup from './components/Signup';
 import Login from './components/Login';
 import Dashboard from './components/Dashboard';
-export const url = 'http://localhost:8000/users'
+export const url = 'https://fsdbe.herokuapp.com/users'
 function App() {
   return <>
   <Router>
