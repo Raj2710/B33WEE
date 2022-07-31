@@ -1,7 +1,7 @@
 var express = require('express');
 var router = express.Router();
 const {dbUrl,mongodb,MongoClient,dbName} = require('../dbSchema')
-const {hashPassword,hashCompare,createToken,validate}=require('../auth');
+const {hashPassword,hashCompare,createToken,validate,roleAdmin,roleStudent}=require('../auth');
 
 
 /* GET users listing. */
@@ -15,30 +15,15 @@ router.get('/', function(req, res, next) {
   `);
 });
 
-router.get('/all',async(req,res)=>{
+router.get('/all',validate,async(req,res)=>{
   const client = await MongoClient.connect(dbUrl)
   try {
-    let token = req.headers.authorization.split(" ")[1]
-    let validation = await validate(token)
-
-    let user = await db.collection('user').findOne({email:validation.email,role:validation.role})
-    if(user && validation.validity)
-    {
-        const db = await client.db(dbName)
+      const db = await client.db(dbName)
       let users = await db.collection('user').find().toArray();
       res.json({
-        stausCode:200,
+        statusCode:200,
         data:users
       })
-    }
-    else
-    {
-      res.json({
-        stausCode:401,
-        message:"Token Expired",
-      }) 
-    }
-
   } catch (error) {
       console.log(error)
       res.json({
@@ -62,7 +47,7 @@ router.post('/add-user',async(req,res)=>{
     if(user)
     {
       res.json({
-        stausCode:200,
+        statusCode:400,
         message:'User Already Exists'
       })
     }
@@ -71,7 +56,7 @@ router.post('/add-user',async(req,res)=>{
       req.body.password = await hashPassword(req.body.password)
       user = await db.collection('user').insertOne(req.body)
       res.json({
-        stausCode:200,
+        statusCode:200,
         message:'User Created Successfully'
       })
     }
@@ -140,7 +125,7 @@ router.post('/login',async(req,res)=>{
   }
 })
 
-router.post('/edit-user/:id',async(req,res)=>{
+router.put('/edit-user/:id',validate,async(req,res)=>{
   const client = await MongoClient.connect(dbUrl)
   try {
     const db = await client.db(dbName)
@@ -172,7 +157,7 @@ router.post('/edit-user/:id',async(req,res)=>{
   }
 })
 
-router.delete('/delete-user/:id',async(req,res)=>{
+router.delete('/delete-user/:id',validate,async(req,res)=>{
   const client = await MongoClient.connect(dbUrl)
   try {
     const db = await client.db(dbName)
